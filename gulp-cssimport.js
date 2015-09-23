@@ -1,6 +1,5 @@
 "use strict";
 var gutil = require("gulp-util");
-var fs = require("fs");
 var path = require("path");
 var File = gutil.File;
 var PluginError = gutil.PluginError;
@@ -10,6 +9,9 @@ var trim = require("useful-functions.js").trim;
 var getExtension = require("useful-functions.js").getExtension;
 var url = require("url");
 var EventEmitter = require("events").EventEmitter;
+var Promise = require('bluebird');
+var fs = Promise.promisifyAll(require('fs'))
+
 
 var PLUGIN_NAME = "gulp-cssimport";
 
@@ -22,6 +24,16 @@ function fail() {
 function isUrl(s) {
 	var regexp = /(ftp|http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
 	return regexp.test(s);
+}
+
+function getUnderscoreFilePaths (p) {
+	var dirname = path.dirname(p);
+	var basename = path.basename(p);
+	var otherBaseName = basename[0] === "_" ? basename.split("").splice(1).join("") : "_" + basename;
+	return [
+		path.resolve(dirname, basename),
+		path.resolve(dirname, otherBaseName)
+	];
 }
 
 var defaults = {
@@ -105,15 +117,21 @@ module.exports = function(options) {
 				}
 
 				var importFilePath = path.normalize(path.join(fileDirectory, importFile));
-				fs.readFile(importFilePath, function readFileEnd(error, buffer) {
-					if (error) {
-						callback.apply(null, [error]);
-						return;
-					}
+				var filepaths = getUnderscoreFilePaths(importFilePath);
+
+				Promise.any(filepaths.map(function(p){
+					return fs.statAsync(p)
+					.then(function(){ return p; });
+				}))
+				.then(fs.readFileAsync)
+				.then(function(buffer){
 					line = buffer.toString();
 					parsedFiles[importFilePath] = true;
 					callback.apply(null, [null, line].concat(args));
-				});
+				})
+				.catch(function(err){
+					callback.apply(null, [err]);
+				})
 				return;
 			}
 

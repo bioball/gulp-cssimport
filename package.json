@@ -16,6 +16,7 @@
     "import"
   ],
   "dependencies": {
+    "bluebird": "^2.10.1",
     "gulp-util": "2.2.X",
     "through2": "0.4.X",
     "useful-functions.js": "1.0.X"
