@@ -107,12 +107,12 @@ module.exports = function(options) {
 					return;
 				}
 
-				var importFilePath = path.normalize(path.join(fileDirectory, importFile));
-				var filepaths = getUnderscoreFilePaths(importFilePath, path.extname(filePath));
-
+				var importFilePath;
+				
 				glob(path.join(fileDirectory, "*(_)" + path.basename(importFile) + "*(css|scss|sass)"))
 				.then(function(files){
-					return fs.readFileAsync(files[0]);
+					importFilePath = files[0]
+					return fs.readFileAsync(importFilePath);
 				})
 				.then(function(buffer){
 					line = buffer.toString();
