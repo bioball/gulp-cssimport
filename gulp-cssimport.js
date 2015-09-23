@@ -109,7 +109,10 @@ module.exports = function(options) {
 
 				var importFilePath;
 
-				glob(path.join(fileDirectory, "*(_)" + path.basename(importFile) + "*(css|scss|sass)"))
+				var globPath = path.join(fileDirectory, "*(_)" + path.basename(importFile) + "*(css|scss|sass|" + path.extname(importFile) + ")");
+				console.log('globbing for ' + globPath);
+
+				glob(path.join(fileDirectory, "*(_)" + path.basename(importFile) + "*(css|scss|sass|" + path.extname(importFile) + ")"))
 				.then(function(files){
 					importFilePath = files[0];
 					if (!importFilePath) {
