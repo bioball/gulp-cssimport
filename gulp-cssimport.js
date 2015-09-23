@@ -108,11 +108,14 @@ module.exports = function(options) {
 				}
 
 				var importFilePath;
-				
+
 				glob(path.join(fileDirectory, "*(_)" + path.basename(importFile) + "*(css|scss|sass)"))
 				.then(function(files){
-					importFilePath = files[0]
-					return fs.readFileAsync(importFilePath);
+					importFilePath = files[0];
+					if (!importFilePath) {
+						gutil.log("file " + importFile + " not found on system.")
+					}
+					return importFilePath ? fs.readFileAsync(importFilePath) : "";
 				})
 				.then(function(buffer){
 					line = buffer.toString();
